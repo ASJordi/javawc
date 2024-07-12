@@ -38,6 +38,13 @@ public class Core {
         this.calculate();
     }
 
+    public Core(List<String> lines) {
+        this.lines = lines;
+        this.numberOfLines = countLines();
+        this.wordCountMap = new HashMap<>();
+        this.calculate();
+    }
+
     public int getNumberOfLines() {
         return numberOfLines;
     }
@@ -77,8 +84,7 @@ public class Core {
     public String getDefaultOutput() {
         return this.numberOfLines + " "
                 + this.numberOfWords + " "
-                + this.numberOfCharacters + " "
-                + this.getFileName();
+                + this.numberOfCharacters;
     }
 
     public static String getHelp() {

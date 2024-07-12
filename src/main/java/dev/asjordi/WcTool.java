@@ -1,4 +1,3 @@
-
 package dev.asjordi;
 
 import java.nio.file.Path;
@@ -16,7 +15,7 @@ public class WcTool {
     private static final List<String> definedCommands = List.of("-c", "-m", "-l", "-L", "-w", "-r", "-rr", "--help", "--version");
 
     public static void main(String[] args) {
-        if (processEmptyArgumentCommand(args)) return;
+        processEmptyArgumentCommand(args);
         if (processSingleArgumentCommand(args)) return;
         handleMultipleArguments(args);
     }
@@ -80,12 +79,12 @@ public class WcTool {
         return sb;
     }
 
-    private static boolean processEmptyArgumentCommand(String[] args) {
+    private static void processEmptyArgumentCommand(String[] args) {
         if (args.length == 0) {
-            System.out.println("Standard input not supported yet. Use --help for more information.");
-            return true;
+            List<String> lines = FileUtil.readFromConsole();
+            Core core = new Core(lines);
+            System.out.println(core.getDefaultOutput());
         }
-        return false;
     }
 
     private static boolean processSingleArgumentCommand(String[] args) {
@@ -93,7 +92,7 @@ public class WcTool {
             Path path = Paths.get(args[0]);
             if (FileUtil.isValidFile(path)) {
                 Core core = new Core(path);
-                System.out.println(core.getDefaultOutput());
+                System.out.println(core.getDefaultOutput() + " " + path.getFileName().toString());
                 return true;
             } else if (args[0].equals("--help")) {
                 System.out.println(Core.getHelp());

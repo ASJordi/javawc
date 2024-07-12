@@ -1,8 +1,6 @@
 package dev.asjordi;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +36,23 @@ public class FileUtil {
         return list.stream()
                 .filter(l -> !l.trim().isEmpty())
                 .collect(Collectors.toList());
+    }
+
+    public static List<String> readFromConsole() {
+        List<String> list = new LinkedList<>();
+
+        try (Reader r = new InputStreamReader(System.in, StandardCharsets.UTF_8);
+             BufferedReader br = new BufferedReader(r)) {
+            String ch;
+            while ((ch = br.readLine()) != null) {
+                if (">exit".equalsIgnoreCase(ch.trim())) break;
+                list.add(ch);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return list;
     }
     
 }
