@@ -20,14 +20,14 @@ public class Core {
     private Path path;
     private List<String> lines;
     
-    private int numberOfLines;
-    private int numberOfWords;
-    private int numberOfCharacters;
+    private long numberOfLines;
+    private long numberOfWords;
+    private long numberOfCharacters;
     private long numberOfBytes;
-    private int maxLineLength;
+    private long maxLineLength;
     private final Map<String, Integer> wordCountMap;
     private String highestRepeatedWord;
-    private int highestRepeatedWordCount;
+    private long highestRepeatedWordCount;
 
     public Core(Path path) {
         this.path = path;
@@ -45,15 +45,15 @@ public class Core {
         this.calculate();
     }
 
-    public int getNumberOfLines() {
+    public long getNumberOfLines() {
         return numberOfLines;
     }
 
-    public int getNumberOfWords() {
+    public long getNumberOfWords() {
         return numberOfWords;
     }
 
-    public int getNumberOfCharacters() {
+    public long getNumberOfCharacters() {
         return numberOfCharacters;
     }
 
@@ -61,7 +61,7 @@ public class Core {
         return numberOfBytes;
     }
 
-    public int getMaxLineLength() {
+    public long getMaxLineLength() {
         return maxLineLength;
     }
 
@@ -73,7 +73,7 @@ public class Core {
         return highestRepeatedWord;
     }
 
-    public int getHighestRepeatedWordCount() {
+    public long getHighestRepeatedWordCount() {
         return highestRepeatedWordCount;
     }
 
@@ -99,6 +99,7 @@ public class Core {
         sb.append("  -L                     print the length of the longest line\n");
         sb.append("  -w                     print the word counts\n");
         sb.append("  -r                     print the most repeated word in the file\n");
+        sb.append("  -rr                    print the number of times the most repeated word is repeated\n");
         sb.append("  --help                 display this help and exit\n");
         sb.append("  --version              output version information and exit\n");
         return sb.toString();

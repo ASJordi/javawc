@@ -3,6 +3,7 @@ package dev.asjordi;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class WcTool {
     }
 
     private static void handleMultipleArguments(String[] args) {
-        Path path = null;
+        List<Path> paths = new LinkedList<>();
         Set<String> commands = new HashSet<>();
 
         for (String arg : args) {
@@ -33,32 +34,84 @@ public class WcTool {
                     return;
                 }
             } else if (arg.lastIndexOf(".") != -1) {
-                path = Paths.get(arg);
+                paths.add(Paths.get(arg));
             } else {
                 System.out.println("Invalid option " + arg + ", use --help for more information.");
                 return;
             }
         }
 
-        if (path != null && FileUtil.isValidFile(path) && !commands.isEmpty()) processFileCommands(path, commands);
+        if (!paths.isEmpty() && paths.size() > 1) {
+            processMultipleFileCommands(paths, commands);
+        } else if (paths.size() == 1 && !commands.isEmpty() && FileUtil.isValidFile(paths.getFirst())) {
+            processFileCommands(paths.getFirst(), commands);
+        }
+    }
+
+    private static void processMultipleFileCommands(List<Path> paths, Set<String> commands) {
+        List<Object[]> results = new LinkedList<>();
+
+        paths.forEach(p -> {
+            Core c = new Core(p);
+            Object[] res = new Object[7];
+            if (FileUtil.isValidFile(p)) {
+                processCommands(commands, c, res);
+                results.add(res);
+            } else {
+                System.out.println("Path " + p.getFileName() + " is not a valid file.");
+            }
+        });
+
+        for (int i = 0; i < results.size(); i++) {
+            StringBuilder sb = formatResults(results.get(i));
+            sb.append(paths.get(i).getFileName().toString());
+            System.out.println(sb);
+        }
+
+        Object[] sum = new Object[7];
+        for (Object[] result : results) {
+            for (int j = 0; j < result.length; j++) {
+                if (result[j] != null) {
+                    if (sum[j] == null) sum[j] = result[j] instanceof String ? 0L : result[j];
+                    else {
+                        if (result[j] instanceof String) continue;
+                        else sum[j] = (long) sum[j] + (long) result[j];
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = formatResults(sum);
+        sb.append("total");
+        System.out.println(sb);
+    }
+
+    private static void processCommands(Set<String> commands, Core core, Object[] result) {
+        if (!commands.isEmpty()) {
+            for (String command : commands) {
+                switch (command) {
+                    case "-l" -> result[0] = core.getNumberOfLines();
+                    case "-w" -> result[1] = core.getNumberOfWords();
+                    case "-m" -> result[2] = core.getNumberOfCharacters();
+                    case "-c" -> result[3] = core.getNumberOfBytes();
+                    case "-L" -> result[4] = core.getMaxLineLength();
+                    case "-r" -> result[5] = core.getHighestRepeatedWord();
+                    case "-rr" -> result[6] = core.getHighestRepeatedWordCount();
+                    default -> System.out.println("Invalid option " + command + ", use --help for more information.");
+                }
+            }
+        } else {
+            result[0] = core.getNumberOfLines();
+            result[1] = core.getNumberOfWords();
+            result[2] = core.getNumberOfCharacters();
+        }
     }
 
     private static void processFileCommands(Path path, Set<String> commands) {
         Core core = new Core(path);
         Object[] results = new Object[7];
 
-        for (String command : commands) {
-            switch (command) {
-                case "-l" -> results[0] = core.getNumberOfLines();
-                case "-w" -> results[1] = core.getNumberOfWords();
-                case "-m" -> results[2] = core.getNumberOfCharacters();
-                case "-c" -> results[3] = core.getNumberOfBytes();
-                case "-L" -> results[4] = core.getMaxLineLength();
-                case "-r" -> results[5] = core.getHighestRepeatedWord();
-                case "-rr" -> results[6] = core.getHighestRepeatedWordCount();
-                default -> System.out.println("Invalid option " + command + ", use --help for more information.");
-            }
-        }
+        processCommands(commands, core, results);
 
         StringBuilder sb = formatResults(results);
         sb.append(path.getFileName().toString());
