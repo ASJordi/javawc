@@ -1,0 +1,129 @@
+package dev.asjordi;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ *
+ * @author Jordi <ejordi.ayala@gmail.com>
+ */
+public class Core {
+    
+    private Path path;
+    private List<String> lines;
+    
+    private int numberOfLines;
+    private int numberOfWords;
+    private int numberOfCharacters;
+    private int numberOfBytes;
+    private int maxLineLength;
+    private final Map<String, Integer> wordCountMap;
+    private String highestRepeatedWord;
+    private int highestRepeatedWordCount;
+
+    public Core(Path path) {
+        this.path = path;
+        this.lines = FileUtil.readAllLines(this.path);
+        this.numberOfLines = this.lines.size();
+        this.wordCountMap = new HashMap<>();
+        this.calculate();
+    }
+
+    public int getNumberOfLines() {
+        return numberOfLines;
+    }
+
+    public int getNumberOfWords() {
+        return numberOfWords;
+    }
+
+    public int getNumberOfCharacters() {
+        return numberOfCharacters;
+    }
+
+    public int getNumberOfBytes() {
+        return numberOfBytes;
+    }
+
+    public int getMaxLineLength() {
+        return maxLineLength;
+    }
+
+    public Map<String, Integer> getWordCountMap() {
+        return wordCountMap;
+    }
+
+    public String getHighestRepeatedWord() {
+        return highestRepeatedWord;
+    }
+
+    public int getHighestRepeatedWordCount() {
+        return highestRepeatedWordCount;
+    }
+
+    public String getFileName() {
+        return this.path.getFileName().toString();
+    }
+
+    public String getDefaultOutput() {
+        return this.numberOfLines + " "
+                + this.numberOfWords + " "
+                + this.numberOfCharacters + " "
+                + this.getFileName();
+    }
+
+    public static String getHelp() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Usage: wc [OPTION]... [FILE]...\n");
+        sb.append("Print newline, word, and byte counts for each FILE, and a total line if more than one FILE is specified.\n");
+        sb.append("With no FILE, or when FILE is -, read standard input.\n\n");
+        sb.append("The options below may be used to select which counts are printed, always in the following order: newline, word, character, byte, maximum line length.\n");
+        sb.append("  -c                     print the byte counts\n");
+        sb.append("  -m                     print the character counts\n");
+        sb.append("  -l                     print the newline counts\n");
+        sb.append("  -L                     print the length of the longest line\n");
+        sb.append("  -w                     print the word counts\n");
+        sb.append("  -r                     print the most repeated word in the file\n");
+        sb.append("  --help                 display this help and exit\n");
+        sb.append("  --version              output version information and exit\n");
+        return sb.toString();
+    }
+
+    public static String getVersion() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("javawc utils v1.0\n");
+        sb.append("Written by Jordi Ayala <@ASJordi>");
+        return sb.toString();
+    }
+
+    private void calculate() {
+        for (String line : lines) {
+            numberOfCharacters += line.length();
+            String[] words = line.split("\\s+");
+            numberOfWords += words.length;
+            numberOfBytes += line.getBytes(StandardCharsets.UTF_8).length;
+            if (line.length() > maxLineLength) maxLineLength = line.length();
+
+            for (String word : words) {
+                word = word.replaceAll("[^A-Za-z0-9]","");
+                wordCountMap.put(word, wordCountMap.getOrDefault(word, 0) + 1);
+            }
+        }
+
+        numberOfCharacters += this.numberOfLines;
+        numberOfBytes += this.numberOfLines;
+
+        var maxEntry = wordCountMap.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue());
+
+        if (maxEntry.isPresent()) {
+            highestRepeatedWord = maxEntry.get().getKey();
+            highestRepeatedWordCount = maxEntry.get().getValue();
+        }
+    }
+}

@@ -1,0 +1,4 @@
+Hi, this is the test file to check if the wc tool written in Java is working.
+It has features such as word, line and byte counter along with additional features such as:
+1. Each Word Counter - Which will give the count of each word in the file or standard input.
+2. Highest repeated word - This will output the word and its count that are repeated the most in the file.
