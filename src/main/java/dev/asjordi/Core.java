@@ -1,11 +1,15 @@
 package dev.asjordi;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -19,7 +23,7 @@ public class Core {
     private int numberOfLines;
     private int numberOfWords;
     private int numberOfCharacters;
-    private int numberOfBytes;
+    private long numberOfBytes;
     private int maxLineLength;
     private final Map<String, Integer> wordCountMap;
     private String highestRepeatedWord;
@@ -28,8 +32,9 @@ public class Core {
     public Core(Path path) {
         this.path = path;
         this.lines = FileUtil.readAllLines(this.path);
-        this.numberOfLines = this.lines.size();
+        this.numberOfLines = countLines();
         this.wordCountMap = new HashMap<>();
+        this.calculateBytes();
         this.calculate();
     }
 
@@ -45,7 +50,7 @@ public class Core {
         return numberOfCharacters;
     }
 
-    public int getNumberOfBytes() {
+    public long getNumberOfBytes() {
         return numberOfBytes;
     }
 
@@ -100,22 +105,40 @@ public class Core {
         return sb.toString();
     }
 
+    private int countLines() {
+        if (this.lines.isEmpty()) return 0;
+
+        int lineCount = this.lines.size();
+
+        if (!lines.get(lines.size() - 1).isEmpty()) lineCount++;
+
+        return lineCount;
+    }
+
+    private void calculateBytes() {
+        try {
+            this.numberOfBytes = Files.size(this.path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void calculate() {
+        Pattern pattern = Pattern.compile("\\S+");
         for (String line : lines) {
             numberOfCharacters += line.length();
-            String[] words = line.split("\\s+");
-            numberOfWords += words.length;
-            numberOfBytes += line.getBytes(StandardCharsets.UTF_8).length;
-            if (line.length() > maxLineLength) maxLineLength = line.length();
 
-            for (String word : words) {
-                word = word.replaceAll("[^A-Za-z0-9]","");
+            Matcher m = pattern.matcher(line);
+            while (m.find()) {
+                numberOfWords++;
+                String word = m.group().replaceAll("[^A-Za-z0-9]","");
                 wordCountMap.put(word, wordCountMap.getOrDefault(word, 0) + 1);
             }
+
+            if (line.length() > maxLineLength) maxLineLength = line.length();
         }
 
         numberOfCharacters += this.numberOfLines;
-        numberOfBytes += this.numberOfLines;
 
         var maxEntry = wordCountMap.entrySet()
                 .stream()
