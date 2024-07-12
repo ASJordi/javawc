@@ -89,7 +89,7 @@ public class Core {
 
     public static String getHelp() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Usage: wc [OPTION]... [FILE]...\n");
+        sb.append("Usage: java -jar javawc-1.0-SNAPSHOT.jar [OPTION]... [FILE]...\n");
         sb.append("Print newline, word, and byte counts for each FILE, and a total line if more than one FILE is specified.\n");
         sb.append("With no FILE, or when FILE is -, read standard input.\n\n");
         sb.append("The options below may be used to select which counts are printed, always in the following order: newline, word, character, byte, maximum line length.\n");
